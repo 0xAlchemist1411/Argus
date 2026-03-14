@@ -1,8 +1,10 @@
 import fs from "fs"
 import path from "path"
+import { prisma } from "../db/prisma"
 import { chunkCode } from "./chunk.service"
+import { isCodeFile, shouldIgnoreDir } from "../utils/file.utils"
 
-export async function scanRepo(repoPath: string) {
+export async function scanRepo(repoPath: string, repoId: string) {
 
     const files: string[] = []
 
@@ -18,11 +20,13 @@ export async function scanRepo(repoPath: string) {
 
             if (stat.isDirectory()) {
 
-                if (entry === "node_modules" || entry === ".git") continue
+                if (shouldIgnoreDir(entry)) continue
 
                 walk(fullPath)
 
             } else {
+
+                if (!isCodeFile(fullPath)) continue
 
                 files.push(fullPath)
 
@@ -34,11 +38,20 @@ export async function scanRepo(repoPath: string) {
 
     walk(repoPath)
 
+    console.log("Code files:", files.length)
+
     for (const file of files) {
 
         const code = fs.readFileSync(file, "utf-8")
 
-        await chunkCode(file, code)
+        const fileRecord = await prisma.file.create({
+            data: {
+                path: file,
+                repoId
+            }
+        })
+
+        await chunkCode(fileRecord.id, code)
 
     }
 

@@ -1,0 +1,33 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model Repository {
+    id        String   @id @default(uuid())
+    repoUrl   String
+    name      String
+    createdAt DateTime @default(now())
+
+    files File[]
+}
+
+model File {
+    id     String @id @default(uuid())
+    path   String
+    repoId String
+
+    repository Repository @relation(fields: [repoId], references: [id])
+    chunks     Chunk[]
+}
+
+model Chunk {
+    id        String @id @default(uuid())
+    content   String
+    embedding Json
+    fileId    String
+    file      File   @relation(fields: [fileId], references: [id])
+}

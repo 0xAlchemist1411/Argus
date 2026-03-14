@@ -1,15 +1,16 @@
+import dotenv from "dotenv"
 import { buildApp } from "./app"
-import { env } from "./config/env"
+
+dotenv.config()
 
 const app = buildApp()
 
 async function start() {
-
-    await app.listen({
-        port: env.PORT
+    app.listen({
+        port: Number(process.env.PORT) || 4000
     })
 
-    console.log(`Server running on ${env.PORT}`)
+    console.log(`Server running on ${process.env.PORT}`)
 }
 
 start()
