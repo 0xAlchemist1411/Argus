@@ -7,7 +7,7 @@ const app = buildApp()
 
 async function start() {
     app.listen({
-        port: Number(process.env.PORT) || 4000
+        port: Number(process.env.PORT)
     })
 
     console.log(`Server running on ${process.env.PORT}`)

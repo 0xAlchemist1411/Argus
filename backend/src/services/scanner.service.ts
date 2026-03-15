@@ -42,7 +42,7 @@ export async function scanRepo(repoPath: string, repoId: string) {
 
     for (const file of files) {
 
-        const code = fs.readFileSync(file, "utf-8")
+        const code = await fs.promises.readFile(file, "utf-8")
 
         const fileRecord = await prisma.file.create({
             data: {
@@ -52,7 +52,5 @@ export async function scanRepo(repoPath: string, repoId: string) {
         })
 
         await chunkCode(fileRecord.id, code)
-
     }
-
 }

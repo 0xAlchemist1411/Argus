@@ -7,9 +7,14 @@ export default async function reposRoutes(app: FastifyInstance) {
 
         const { repoUrl } = req.body as any
 
-        await repoQueue.add("index-repo", {
-            repoUrl
-        })
+        repoQueue.add(
+            "index-repo",
+            { repoUrl },
+            {
+                removeOnComplete: true,
+                removeOnFail: true
+            }
+        )
 
         return {
             status: "indexing started"

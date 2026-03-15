@@ -32,3 +32,18 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# cloned repositories
+repos/
+
+# environment variables
+.env
+
+# node/bun deps
+node_modules/
+
+# prisma artifacts
+.prisma
+
+# build output
+dist
