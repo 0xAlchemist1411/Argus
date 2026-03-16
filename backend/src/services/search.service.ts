@@ -1,7 +1,7 @@
 import { prisma } from "../db/prisma"
 import { createEmbedding } from "./embedding.service"
 
-function cosineSimilarity(a: number[], b: number[]) {
+export function cosineSimilarity(a: number[], b: number[]) {
 
     let dot = 0
     let normA = 0

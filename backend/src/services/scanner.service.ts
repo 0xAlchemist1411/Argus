@@ -2,7 +2,9 @@ import fs from "fs"
 import path from "path"
 import { prisma } from "../db/prisma"
 import { chunkCode } from "./chunk.service"
+import { createEmbedding } from "./embedding.service"
 import { isCodeFile, shouldIgnoreDir } from "../utils/file.utils"
+import { extractSymbols } from "./symbol.service"
 
 export async function scanRepo(repoPath: string, repoId: string) {
 
@@ -44,12 +46,17 @@ export async function scanRepo(repoPath: string, repoId: string) {
 
         const code = await fs.promises.readFile(file, "utf-8")
 
+        const embedding = await createEmbedding(code.slice(0, 4000))
+
         const fileRecord = await prisma.file.create({
             data: {
                 path: file,
-                repoId
+                repoId,
+                embedding
             }
         })
+
+        await extractSymbols(fileRecord.id, code)
 
         await chunkCode(fileRecord.id, code)
     }

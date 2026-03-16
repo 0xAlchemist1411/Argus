@@ -8,7 +8,7 @@ datasource db {
 
 model Repository {
     id        String   @id @default(uuid())
-    repoUrl   String
+    repoUrl   String   @unique
     name      String
     createdAt DateTime @default(now())
     summary   String?
@@ -22,7 +22,10 @@ model File {
     repoId String
 
     repository Repository @relation(fields: [repoId], references: [id])
-    chunks     Chunk[]
+    embedding  Json?
+
+    chunks  Chunk[]
+    symbols Symbol[]
 }
 
 model Chunk {
@@ -31,4 +34,13 @@ model Chunk {
     embedding Json
     fileId    String
     file      File   @relation(fields: [fileId], references: [id])
+}
+
+model Symbol {
+    id     String @id @default(uuid())
+    name   String
+    type   String
+    fileId String
+    file   File   @relation(fields: [fileId], references: [id])
+    line   Int
 }

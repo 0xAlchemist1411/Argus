@@ -32,14 +32,34 @@ const worker = new Worker(
 
         console.log("🗄️  Creating repository record in database...")
 
-        const repo = await prisma.repository.create({
-            data: {
+        const repo = await prisma.repository.upsert({
+            where: { repoUrl },
+            update: {},
+            create: {
                 repoUrl,
                 name: repoUrl.split("/").pop()
             }
         })
 
         console.log(`✅ Repository saved with ID: ${repo.id}`)
+
+        console.log("🧹 Clearing previous indexed files...")
+
+        await prisma.chunk.deleteMany({
+            where: {
+                file: {
+                    repoId: repo.id
+                }
+            }
+        })
+
+        await prisma.file.deleteMany({
+            where: {
+                repoId: repo.id
+            }
+        })
+
+        console.log("✅ Old index cleared")
 
         console.log("🔍 Scanning repository files...")
 
