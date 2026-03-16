@@ -7,6 +7,7 @@ import IORedis from "ioredis"
 import { cloneRepo } from "../services/repo.service"
 import { scanRepo } from "../services/scanner.service"
 import { prisma } from "../db/prisma"
+import { generateRepoSummary } from "../services/repo-summary.service"
 
 const connection = new IORedis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: null
@@ -23,15 +24,11 @@ const worker = new Worker(
         console.log(`🚀 [JOB ${job.id}] Starting repository indexing`)
         console.log(`📦 Repo URL: ${repoUrl}`)
 
-        /* ---------------- Clone Repo ---------------- */
-
         console.log("⬇️  Cloning repository...")
 
         const repoPath = await cloneRepo(repoUrl)
 
         console.log(`✅ Repo cloned at: ${repoPath}`)
-
-        /* ---------------- Create DB Record ---------------- */
 
         console.log("🗄️  Creating repository record in database...")
 
@@ -44,15 +41,13 @@ const worker = new Worker(
 
         console.log(`✅ Repository saved with ID: ${repo.id}`)
 
-        /* ---------------- Scan Repo ---------------- */
-
         console.log("🔍 Scanning repository files...")
 
         await scanRepo(repoPath, repo.id)
 
-        console.log("✅ Repository scan completed")
+        await generateRepoSummary(repo.id)
 
-        /* ---------------- Finish ---------------- */
+        console.log("✅ Repository scan completed")
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(2)
 
@@ -64,7 +59,6 @@ const worker = new Worker(
     { connection }
 )
 
-/* ---------- Worker Events ---------- */
 
 worker.on("active", (job) => {
     console.log(`⚙️  Job ${job.id} is now active`)
