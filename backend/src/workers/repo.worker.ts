@@ -45,6 +45,14 @@ const worker = new Worker(
 
         console.log("🧹 Clearing previous indexed files...")
 
+        await prisma.symbol.deleteMany({
+            where: {
+                file: {
+                    repoId: repo.id
+                }
+            }
+        })
+
         await prisma.chunk.deleteMany({
             where: {
                 file: {
@@ -59,7 +67,7 @@ const worker = new Worker(
             }
         })
 
-        console.log("✅ Old index cleared")
+        console.log("✅ Removed previously indexed data")
 
         console.log("🔍 Scanning repository files...")
 
