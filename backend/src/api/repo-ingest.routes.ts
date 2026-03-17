@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify"
 import { repoQueue } from "../queue/repo.queue"
 
-export default async function reposRoutes(app: FastifyInstance) {
+export default async function repoIngestRoutes(app: FastifyInstance) {
 
     app.post("/ingest", async (req, reply) => {
 

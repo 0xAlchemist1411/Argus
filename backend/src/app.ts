@@ -1,6 +1,6 @@
 import Fastify from "fastify"
-import reposRoutes from "./api/repos.routes"
 import chatRoutes from "./api/chat.routes"
+import repoIngestRoutes from "./api/repo-ingest.routes"
 
 export function buildApp() {
 
@@ -8,7 +8,7 @@ export function buildApp() {
         logger: true
     })
 
-    app.register(reposRoutes, { prefix: "/repos" })
+    app.register(repoIngestRoutes, { prefix: "/repos" })
     app.register(chatRoutes, { prefix: "/chat" })
 
     return app
