@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify"
 import { repoQueue } from "../queue/repo.queue"
+import { prisma } from "../db/prisma"
 
 export default async function repoIngestRoutes(app: FastifyInstance) {
 
@@ -7,9 +8,21 @@ export default async function repoIngestRoutes(app: FastifyInstance) {
 
         const { repoUrl } = req.body as any
 
-        repoQueue.add(
+        const repo = await prisma.repository.upsert({
+            where: { repoUrl },
+            update: {},
+            create: {
+                repoUrl,
+                name: repoUrl.split("/").pop()
+            }
+        })
+
+        await repoQueue.add(
             "index-repo",
-            { repoUrl },
+            {
+                repoUrl,
+                repoId: repo.id
+            },
             {
                 removeOnComplete: true,
                 removeOnFail: true
@@ -17,9 +30,9 @@ export default async function repoIngestRoutes(app: FastifyInstance) {
         )
 
         return {
-            status: "indexing started"
+            status: "indexing started",
+            repoId: repo.id,
+            name: repo.name
         }
-
     })
-
 }

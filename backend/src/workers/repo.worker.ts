@@ -18,11 +18,12 @@ const worker = new Worker(
     async (job) => {
 
         const startTime = Date.now()
-        const { repoUrl } = job.data
+        const { repoUrl, repoId } = job.data
 
         console.log("────────────────────────────────────────")
         console.log(`🚀 [JOB ${job.id}] Starting repository indexing`)
         console.log(`📦 Repo URL: ${repoUrl}`)
+        console.log(`🆔 Repo ID: ${repoId}`)
 
         console.log("⬇️  Cloning repository...")
 
@@ -30,63 +31,40 @@ const worker = new Worker(
 
         console.log(`✅ Repo cloned at: ${repoPath}`)
 
-        console.log("🗄️  Creating repository record in database...")
-
-        const repo = await prisma.repository.upsert({
-            where: { repoUrl },
-            update: {},
-            create: {
-                repoUrl,
-                name: repoUrl.split("/").pop()
-            }
-        })
-
-        console.log(`✅ Repository saved with ID: ${repo.id}`)
-
         console.log("🧹 Clearing previous indexed files...")
 
         await prisma.symbol.deleteMany({
-            where: {
-                file: {
-                    repoId: repo.id
-                }
-            }
+            where: { file: { repoId } }
         })
 
         await prisma.chunk.deleteMany({
-            where: {
-                file: {
-                    repoId: repo.id
-                }
-            }
+            where: { file: { repoId } }
         })
 
         await prisma.file.deleteMany({
-            where: {
-                repoId: repo.id
-            }
+            where: { repoId }
         })
 
         console.log("✅ Removed previously indexed data")
 
         console.log("🔍 Scanning repository files...")
 
-        await scanRepo(repoPath, repo.id)
+        await scanRepo(repoPath, repoId)
 
-        await generateRepoSummary(repo.id)
+        console.log("🧠 Generating repository summary...")
+
+        await generateRepoSummary(repoId)
 
         console.log("✅ Repository scan completed")
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(2)
 
-        console.log(`🎉 Indexing finished for ${repo.name}`)
+        console.log(`🎉 Indexing finished for repo ${repoId}`)
         console.log(`⏱️  Total time: ${duration}s`)
         console.log("────────────────────────────────────────")
-
     },
     { connection }
 )
-
 
 worker.on("active", (job) => {
     console.log(`⚙️  Job ${job.id} is now active`)
