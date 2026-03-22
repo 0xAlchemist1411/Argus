@@ -23,8 +23,6 @@ export default async function chatRoutes(app: FastifyInstance) {
             })
         }
 
-        const answer = await chatWithRepo(repoId, question)
-
-        return { answer }
+        return await chatWithRepo(repoId, question)
     })
 }
