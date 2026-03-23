@@ -6,12 +6,19 @@ datasource db {
     provider = "postgresql"
 }
 
+enum RepoStatus {
+    INDEXING
+    READY
+    FAILED
+}
+
 model Repository {
-    id        String   @id @default(uuid())
-    repoUrl   String   @unique
+    id        String     @id @default(uuid())
+    repoUrl   String     @unique
     name      String
-    createdAt DateTime @default(now())
+    createdAt DateTime   @default(now())
     summary   String?
+    status    RepoStatus @default(INDEXING)
 
     files File[]
 }
@@ -21,11 +28,13 @@ model File {
     path   String
     repoId String
 
-    repository Repository @relation(fields: [repoId], references: [id])
+    repository Repository @relation(fields: [repoId], references: [id], onDelete: Cascade)
     embedding  Json?
 
     chunks  Chunk[]
     symbols Symbol[]
+
+    @@index([repoId])
 }
 
 model Chunk {
@@ -33,7 +42,10 @@ model Chunk {
     content   String
     embedding Json
     fileId    String
-    file      File   @relation(fields: [fileId], references: [id])
+
+    file File @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+    @@index([fileId])
 }
 
 model Symbol {
@@ -41,6 +53,9 @@ model Symbol {
     name   String
     type   String
     fileId String
-    file   File   @relation(fields: [fileId], references: [id])
     line   Int
+
+    file File @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+    @@index([fileId])
 }

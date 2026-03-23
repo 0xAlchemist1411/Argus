@@ -9,7 +9,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
-export default function ChatPanel({ repoId }: { repoId: string }) {
+export default function ChatPanel({
+  repoId,
+  status,
+  onOpenFile,
+}: {
+  repoId: string;
+  status?: string;
+  onOpenFile?: (filePath: string) => void;
+}) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [sources, setSources] = useState<string[]>([]);
@@ -17,6 +25,8 @@ export default function ChatPanel({ repoId }: { repoId: string }) {
 
   async function handleAsk() {
     if (!question.trim()) return;
+    if (status !== "READY") return;
+
     setLoading(true);
     try {
       const res = await api.post("/chat", {
@@ -26,6 +36,7 @@ export default function ChatPanel({ repoId }: { repoId: string }) {
 
       setAnswer(res.data.answer);
       setSources(res.data.sources || []);
+      setQuestion("");
     } finally {
       setLoading(false);
     }
@@ -60,14 +71,30 @@ export default function ChatPanel({ repoId }: { repoId: string }) {
           ))}
         </div>
 
+        {status !== "READY" && (
+          <div className="text-sm text-yellow-400">
+            ⏳ Repository is still indexing. Chat will unlock when ready.
+          </div>
+        )}
+
         <Textarea
           value={question}
+          disabled={loading || status !== "READY"}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask something about the repository..."
           className="min-h-[120px] border-zinc-800 bg-zinc-950 text-zinc-100"
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+              handleAsk();
+            }
+          }}
         />
 
-        <Button onClick={handleAsk} disabled={loading} className="w-full">
+        <Button
+          onClick={handleAsk}
+          disabled={loading || status !== "READY" || !question.trim()}
+          className="w-full"
+        >
           {loading ? "Thinking..." : "Ask Argus"}
         </Button>
       </div>
@@ -75,12 +102,25 @@ export default function ChatPanel({ repoId }: { repoId: string }) {
       <ScrollArea className="flex-1 px-4 pb-4">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
           <div className="text-sm font-medium text-white">Answer</div>
-          <div className="prose prose-invert mt-3 max-w-none text-sm text-zinc-300 prose-p:leading-6">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {answer || "Answers will appear here."}
-            </ReactMarkdown>
-          </div>
 
+          <div className="prose prose-invert mt-3 max-w-none text-sm text-zinc-300 prose-p:leading-6">
+            {!answer &&
+              status === "READY" &&
+              "💬 Ask a question to get started."}
+
+            {status !== "READY" && "⏳ Waiting for indexing to complete..."}
+
+            {answer && (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {answer}
+              </ReactMarkdown>
+            )}
+          </div>
+          {loading && (
+            <div className="mt-3 text-sm text-zinc-400 animate-pulse">
+              Thinking...
+            </div>
+          )}
           {sources.length > 0 && (
             <div className="mt-4 space-y-2">
               <div className="text-xs uppercase tracking-wide text-zinc-500">
@@ -90,8 +130,8 @@ export default function ChatPanel({ repoId }: { repoId: string }) {
                 {sources.map((s) => (
                   <Badge
                     key={s}
-                    variant="outline"
-                    className="border-zinc-700 bg-zinc-950 text-zinc-300"
+                    onClick={() => onOpenFile?.(s)}
+                    className="cursor-pointer border-zinc-700 bg-zinc-950 text-zinc-300 hover:bg-zinc-800"
                   >
                     {s}
                   </Badge>

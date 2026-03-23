@@ -21,9 +21,12 @@ export default async function repoRoutes(app: FastifyInstance) {
 
         const repo = await prisma.repository.findUnique({
             where: { id: repoId },
-            select: { summary: true }
+            select: {
+                summary: true,
+                status: true
+            }
         })
 
-        return { summary: repo?.summary }
+        return repo
     })
 }

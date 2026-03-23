@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 dotenv.config()
 
-import { Worker } from "bullmq"
+import { tryCatch, Worker } from "bullmq"
 import IORedis from "ioredis"
 
 import { cloneRepo } from "../services/repo.service"
@@ -19,6 +19,11 @@ const worker = new Worker(
 
         const startTime = Date.now()
         const { repoUrl, repoId } = job.data
+
+        await prisma.repository.update({
+            where: { id: repoId },
+            data: { status: "INDEXING" }
+        })
 
         console.log("────────────────────────────────────────")
         console.log(`🚀 [JOB ${job.id}] Starting repository indexing`)
@@ -59,6 +64,11 @@ const worker = new Worker(
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(2)
 
+        await prisma.repository.update({
+            where: { id: repoId },
+            data: { status: "READY" }
+        })
+
         console.log(`🎉 Indexing finished for repo ${repoId}`)
         console.log(`⏱️  Total time: ${duration}s`)
         console.log("────────────────────────────────────────")
@@ -74,7 +84,14 @@ worker.on("completed", (job) => {
     console.log(`✅ Job ${job.id} completed successfully`)
 })
 
-worker.on("failed", (job, err) => {
+worker.on("failed", async (job, err) => {
     console.error(`❌ Job ${job?.id} failed`)
     console.error(err)
+
+    if (job?.data?.repoId) {
+        await prisma.repository.update({
+            where: { id: job.data.repoId },
+            data: { status: "FAILED" }
+        })
+    }
 })
