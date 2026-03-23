@@ -19,24 +19,42 @@ export default function ChatPanel({
   onOpenFile?: (filePath: string) => void;
 }) {
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [sources, setSources] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  type Message = {
+    role: "user" | "assistant";
+    content: string;
+    sources?: string[];
+  };
+
+  const [messages, setMessages] = useState<Message[]>([]);
 
   async function handleAsk() {
     if (!question.trim()) return;
     if (status !== "READY") return;
 
+    const userMessage: Message = {
+      role: "user",
+      content: question,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setQuestion("");
     setLoading(true);
+
     try {
       const res = await api.post("/chat", {
         repoId,
         question,
       });
 
-      setAnswer(res.data.answer);
-      setSources(res.data.sources || []);
-      setQuestion("");
+      const aiMessage: Message = {
+        role: "assistant",
+        content: res.data.answer,
+        sources: res.data.sources || [],
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
     } finally {
       setLoading(false);
     }
@@ -100,43 +118,59 @@ export default function ChatPanel({
       </div>
 
       <ScrollArea className="flex-1 px-4 pb-4">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
-          <div className="text-sm font-medium text-white">Answer</div>
-
-          <div className="prose prose-invert mt-3 max-w-none text-sm text-zinc-300 prose-p:leading-6">
-            {!answer &&
-              status === "READY" &&
-              "💬 Ask a question to get started."}
-
-            {status !== "READY" && "⏳ Waiting for indexing to complete..."}
-
-            {answer && (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {answer}
-              </ReactMarkdown>
-            )}
-          </div>
-          {loading && (
-            <div className="mt-3 text-sm text-zinc-400 animate-pulse">
-              Thinking...
+        <div className="space-y-4">
+          {messages.length === 0 && status === "READY" && (
+            <div className="text-sm text-zinc-500">
+              💬 Ask a question to get started.
             </div>
           )}
-          {sources.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <div className="text-xs uppercase tracking-wide text-zinc-500">
-                Sources
+
+          {status !== "READY" && (
+            <div className="text-sm text-zinc-500">
+              ⏳ Waiting for indexing to complete...
+            </div>
+          )}
+
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`rounded-xl p-3 ${
+                msg.role === "user"
+                  ? "bg-zinc-800 text-white"
+                  : "bg-zinc-900 border border-zinc-800 text-zinc-300"
+              }`}
+            >
+              <div className="text-xs mb-1 text-zinc-500">
+                {msg.role === "user" ? "You" : "Argus"}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {sources.map((s) => (
-                  <Badge
-                    key={s}
-                    onClick={() => onOpenFile?.(s)}
-                    className="cursor-pointer border-zinc-700 bg-zinc-950 text-zinc-300 hover:bg-zinc-800"
-                  >
-                    {s}
-                  </Badge>
-                ))}
+
+              <div className="prose prose-invert max-w-none text-sm">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {msg.content}
+                </ReactMarkdown>
               </div>
+
+              {/* Sources */}
+              {msg.sources && msg.sources.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {msg.sources.map((s) => (
+                    <Badge
+                      key={s}
+                      onClick={() => onOpenFile?.(s)}
+                      className="cursor-pointer border-zinc-700 bg-zinc-950 text-zinc-300 hover:bg-zinc-800"
+                    >
+                      {s}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Loading */}
+          {loading && (
+            <div className="text-sm text-zinc-400 animate-pulse">
+              Thinking...
             </div>
           )}
         </div>
