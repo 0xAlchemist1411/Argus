@@ -28,35 +28,49 @@ export default function RecentRepos() {
   if (!repos || repos.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
-        <Clock className="h-4 w-4 text-zinc-400" />
-        <div className="text-xs text-zinc-400 uppercase tracking-wider font-medium">
-          Recent Repos
+    <div className="animate-fade">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Clock className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+            Recently Indexed
+          </span>
         </div>
+        <div className="h-px flex-1 bg-border ml-4" />
       </div>
 
-      <div className="space-y-2">
-        {repos.slice(0, 4).map((repo) => (
+      <div className="grid gap-3">
+        {repos.slice(0, 4).map((repo, idx) => (
           <Link
             key={repo.id}
             href={`/repo/${repo.id}`}
-            className="group flex items-center justify-between rounded-xl border border-zinc-100 bg-zinc-50/50 px-4 py-3 transition-all duration-300 hover:bg-zinc-50 hover:border-zinc-200 hover:shadow-sm"
+            className="group flex items-center justify-between rounded-2xl border border-transparent bg-white/50 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-white hover:shadow-premium animate-slide-up"
+            style={{ animationDelay: `${idx * 100}ms` }}
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <GitBranch className="h-4 w-4 text-zinc-400 shrink-0" />
-              <span className="text-sm text-zinc-700 group-hover:text-zinc-900 transition-colors truncate">
-                {repo.name}
-              </span>
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="h-9 w-9 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                <GitBranch className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                  {repo.name}
+                </div>
+                <div className="text-[10px] text-muted-foreground font-medium truncate">
+                   {repo.repoUrl.replace('https://github.com/', '')}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            
+            <div className="flex items-center gap-3 shrink-0">
               <span
-                className={`text-xs px-2 py-0.5 rounded-full ${
+                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                   repo.status === "READY"
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                     : repo.status === "INDEXING"
-                    ? "bg-amber-50 text-amber-700 border border-amber-200"
-                    : "bg-red-50 text-red-700 border border-red-200"
+                    ? "bg-amber-50 text-amber-600 border-amber-100"
+                    : "bg-red-50 text-red-600 border-red-100"
                 }`}
               >
                 {repo.status === "READY"
@@ -65,7 +79,9 @@ export default function RecentRepos() {
                   ? "Indexing"
                   : "Failed"}
               </span>
-              <ArrowRight className="h-3.5 w-3.5 text-zinc-300 group-hover:text-zinc-500 transition-colors" />
+              <div className="h-8 w-8 rounded-full flex items-center justify-center bg-transparent group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                <ArrowRight className="h-4 w-4" />
+              </div>
             </div>
           </Link>
         ))}
