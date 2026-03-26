@@ -27,7 +27,7 @@ export default function RepoImportCard() {
 
       router.push(`/repo/${repoId}`);
     } catch {
-      setError("Failed to start indexing. Check the repo URL and backend.");
+      setError("Failed to start indexing. Check the repo URL.");
     } finally {
       setLoading(false);
     }
