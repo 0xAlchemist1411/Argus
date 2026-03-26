@@ -3,7 +3,7 @@ import { prisma } from "../db/prisma"
 
 export default async function repoRoutes(app: FastifyInstance) {
 
-    app.get("/:repoId/files", async (req, reply) => {
+    app.get("/:repoId/files", async (req) => {
         const { repoId } = req.params as any
 
         const files = await prisma.file.findMany({
@@ -12,7 +12,7 @@ export default async function repoRoutes(app: FastifyInstance) {
         })
 
         return {
-            files: files.map(f => f.path.replace(/^repos\/[^/]+\//, ""))
+            files: files.map(f => f.path)
         }
     })
 
