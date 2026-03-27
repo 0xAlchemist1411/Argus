@@ -11,7 +11,8 @@ RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY src ./src
-COPY tsconfig.json prisma ./
+COPY tsconfig.json ./
+COPY prisma ./prisma
 
 # Generate Prisma client
 RUN bunx prisma generate
@@ -38,6 +39,12 @@ RUN mkdir -p /app/repos
 EXPOSE 4000
 
 # Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD bun run -e "fetch('http://localhost:4000/health').then(r => r.ok ? process.exit(0) : process.exit(1))"
+
+# Run the application
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["bun", "run", "src/server.ts"]
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD bun run -e "fetch('http://localhost:4000/health').then(r => r.ok ? process.exit(0) : process.exit(1))"
 
