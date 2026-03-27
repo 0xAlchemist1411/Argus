@@ -6,11 +6,14 @@ dotenv.config()
 const app = buildApp()
 
 async function start() {
-    app.listen({
-        port: Number(process.env.PORT)
+    const port = Number(process.env.PORT) || 4000
+
+    await app.listen({
+        port,
+        host: "0.0.0.0"
     })
 
-    console.log(`Server running on ${process.env.PORT}`)
+    console.log(`Server running on ${port}`)
 }
 
 start()
