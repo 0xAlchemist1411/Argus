@@ -255,9 +255,9 @@ export default function ChatPanel({
                         Contextual Sources
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {msg.sources.map((s) => (
+                        {msg.sources.map((s, i) => (
                           <button
-                            key={s}
+                            key={`${s}-${i}`}
                             onClick={() => onOpenFile?.(s)}
                             className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[11px] transition-all font-mono shadow-sm group/source ${
                               msg.role === "user"
