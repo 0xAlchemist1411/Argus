@@ -42,12 +42,6 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD bun run -e "fetch('http://localhost:4000/health').then(r => r.ok ? process.exit(0) : process.exit(1))"
 
-# Run the application
+# Run migrations and start the application
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["bun", "run", "src/server.ts"]
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD bun run -e "fetch('http://localhost:4000/health').then(r => r.ok ? process.exit(0) : process.exit(1))"
-
-# Run the application
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["bun", "run", "src/server.ts"]
+CMD ["sh", "-c", "bunx prisma migrate deploy && bun run src/server.ts"]
