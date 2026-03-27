@@ -3,7 +3,6 @@ services:
     name: argus-backend
     runtime: docker
     dockerfilePath: ./Dockerfile
-    port: 4000
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -26,7 +25,6 @@ services:
   - type: pserv
     name: argus-db
     runtime: postgres15
-    ipAllowList: []
     plan: starter
     postgresVersion: 15
     initialDatabaseName: argus
