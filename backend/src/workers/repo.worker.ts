@@ -8,9 +8,10 @@ import { cloneRepo } from "../services/repo.service"
 import { scanRepo } from "../services/scanner.service"
 import { prisma } from "../db/prisma"
 import { generateRepoSummary } from "../services/repo-summary.service"
+import { redisUrl } from "../config/redis"
 
-const connection = new IORedis(process.env.REDIS_URL!, {
-    maxRetriesPerRequest: null
+const connection = new IORedis(redisUrl!, {
+    maxRetriesPerRequest: 5
 })
 
 const worker = new Worker(
