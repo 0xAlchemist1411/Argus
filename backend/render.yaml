@@ -12,9 +12,7 @@ services:
           name: argus-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          name: argus-redis
-          property: connectionString
+        value: redis://redis:6379
       - key: PORT
         value: 4000
       - key: REPOS_DIR
@@ -24,19 +22,11 @@ services:
 
   - type: pserv
     name: argus-db
-    runtime: postgres15
+    ipAllowList: []
     plan: starter
-    postgresVersion: 15
-    initialDatabaseName: argus
-    user: postgres
     region: oregon
 
   - type: redis
     name: argus-redis
     plan: starter
     region: oregon
-
-databases:
-  - name: argus-db
-    database: argus
-    user: postgres
