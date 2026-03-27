@@ -181,7 +181,8 @@ export default function FileTree({
   onSelectFile?: (path: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const tree = useMemo(() => buildTree(files), [files]);
+  const uniqueFiles = useMemo(() => Array.from(new Set(files)), [files]);
+  const tree = useMemo(() => buildTree(uniqueFiles), [uniqueFiles]);
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set([""]));
 
   const toggleDir = (path: string) => {

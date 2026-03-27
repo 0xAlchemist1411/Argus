@@ -11,8 +11,10 @@ export default async function repoRoutes(app: FastifyInstance) {
             select: { path: true }
         })
 
+        const uniquePaths = Array.from(new Set(files.map(f => f.path)))
+
         return {
-            files: files.map(f => f.path)
+            files: uniquePaths
         }
     })
 
