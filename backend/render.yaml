@@ -12,7 +12,9 @@ services:
           name: argus-db
           property: connectionString
       - key: REDIS_URL
-        value: redis://redis:6379
+        fromService:
+          name: argus-redis
+          property: connectionString
       - key: PORT
         value: 4000
       - key: REPOS_DIR
@@ -22,7 +24,6 @@ services:
 
   - type: pserv
     name: argus-db
-    ipAllowList: []
     plan: starter
     region: oregon
 
@@ -30,3 +31,4 @@ services:
     name: argus-redis
     plan: starter
     region: oregon
+    ipAllowList: []
