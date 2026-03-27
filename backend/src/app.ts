@@ -14,7 +14,11 @@ export function buildApp() {
     })
 
     app.register(cors, {
-        origin : "*",
+        origin: "*",
+    })
+
+    app.get("/health", async (request, reply) => {
+        return { status: "ok" }
     })
 
     app.register(repoIngestRoutes, { prefix: "/repos" })

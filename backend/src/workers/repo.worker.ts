@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 dotenv.config()
 
-import { tryCatch, Worker } from "bullmq"
+import { Worker } from "bullmq"
 import IORedis from "ioredis"
 
 import { cloneRepo } from "../services/repo.service"
